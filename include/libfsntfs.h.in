@@ -2059,6 +2059,216 @@ ssize_t libfsntfs_usn_change_journal_read_usn_record(
          size_t usn_record_data_size,
          libfsntfs_error_t **error );
 
+/* Reads the next parsed USN record from the USN change journal
+ * Returns 1 if successful, 0 if no more records are available or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_change_journal_read_record(
+     libfsntfs_usn_change_journal_t *usn_change_journal,
+     libfsntfs_usn_record_t **usn_record,
+     libfsntfs_error_t **error );
+
+/* -------------------------------------------------------------------------
+ * USN record functions
+ * ------------------------------------------------------------------------- */
+
+/* Creates an USN record from a byte stream
+ * Make sure the value usn_record is referencing, is set to NULL
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_initialize(
+     libfsntfs_usn_record_t **usn_record,
+     const uint8_t *data,
+     size_t data_size,
+     libfsntfs_error_t **error );
+
+/* Frees an USN record
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_free(
+     libfsntfs_usn_record_t **usn_record,
+     libfsntfs_error_t **error );
+
+/* Retrieves the record size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_size(
+     libfsntfs_usn_record_t *usn_record,
+     uint32_t *record_size,
+     libfsntfs_error_t **error );
+
+/* Retrieves the version
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_version(
+     libfsntfs_usn_record_t *usn_record,
+     uint16_t *major_version,
+     uint16_t *minor_version,
+     libfsntfs_error_t **error );
+
+/* Retrieves the file reference
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_file_reference(
+     libfsntfs_usn_record_t *usn_record,
+     uint64_t *file_reference,
+     libfsntfs_error_t **error );
+
+/* Retrieves the parent file reference
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_parent_file_reference(
+     libfsntfs_usn_record_t *usn_record,
+     uint64_t *parent_file_reference,
+     libfsntfs_error_t **error );
+
+/* Retrieves the update sequence number
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_update_sequence_number(
+     libfsntfs_usn_record_t *usn_record,
+     uint64_t *update_sequence_number,
+     libfsntfs_error_t **error );
+
+/* Retrieves the update time
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_update_time(
+     libfsntfs_usn_record_t *usn_record,
+     uint64_t *filetime,
+     libfsntfs_error_t **error );
+
+/* Retrieves the update reason flags
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_update_reason_flags(
+     libfsntfs_usn_record_t *usn_record,
+     uint32_t *update_reason_flags,
+     libfsntfs_error_t **error );
+
+/* Retrieves the update source flags
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_update_source_flags(
+     libfsntfs_usn_record_t *usn_record,
+     uint32_t *update_source_flags,
+     libfsntfs_error_t **error );
+
+/* Retrieves the security descriptor identifier
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_security_descriptor_identifier(
+     libfsntfs_usn_record_t *usn_record,
+     uint32_t *security_descriptor_identifier,
+     libfsntfs_error_t **error );
+
+/* Retrieves the file attribute flags
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_file_attribute_flags(
+     libfsntfs_usn_record_t *usn_record,
+     uint32_t *file_attribute_flags,
+     libfsntfs_error_t **error );
+
+/* Retrieves the size of the UTF-8 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_utf8_name_size(
+     libfsntfs_usn_record_t *usn_record,
+     size_t *utf8_string_size,
+     libfsntfs_error_t **error );
+
+/* Retrieves the UTF-8 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_utf8_name(
+     libfsntfs_usn_record_t *usn_record,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libfsntfs_error_t **error );
+
+/* Retrieves the size of the UTF-16 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_utf16_name_size(
+     libfsntfs_usn_record_t *usn_record,
+     size_t *utf16_string_size,
+     libfsntfs_error_t **error );
+
+/* Retrieves the UTF-16 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_utf16_name(
+     libfsntfs_usn_record_t *usn_record,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libfsntfs_error_t **error );
+
+/* Retrieves the file entry associated with the USN record
+ * Returns 1 if successful, 0 if no matching file entry or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_file_entry(
+     libfsntfs_usn_record_t *usn_record,
+     libfsntfs_volume_t *volume,
+     libfsntfs_file_entry_t **file_entry,
+     libfsntfs_error_t **error );
+
+/* Retrieves the parent file entry associated with the USN record
+ * Returns 1 if successful, 0 if no matching file entry or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_parent_file_entry(
+     libfsntfs_usn_record_t *usn_record,
+     libfsntfs_volume_t *volume,
+     libfsntfs_file_entry_t **parent_file_entry,
+     libfsntfs_error_t **error );
+
+/* Retrieves the size of the UTF-8 encoded path
+ * The path is constructed from the parent path and the name in the USN record.
+ * The returned size includes the end of string character
+ * Returns 1 if successful, 0 if the path is not available or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_utf8_path_size(
+     libfsntfs_usn_record_t *usn_record,
+     libfsntfs_volume_t *volume,
+     size_t *utf8_string_size,
+     libfsntfs_error_t **error );
+
+/* Retrieves the UTF-8 encoded path
+ * The path is constructed from the parent path and the name in the USN record.
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if the path is not available or -1 on error
+ */
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_record_get_utf8_path(
+     libfsntfs_usn_record_t *usn_record,
+     libfsntfs_volume_t *volume,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libfsntfs_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

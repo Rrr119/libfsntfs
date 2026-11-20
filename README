@@ -15,6 +15,7 @@ Supported NTFS format features:
 * LZNT1 compression
 * Windows Overlay Filter (WOF) compressed data (LZX and LZXPRESS-Huffman)
 * Case sensitive directories
+* USN change journal parsing, file association and timeline output
 
 Unsupported NTFS format features:
 

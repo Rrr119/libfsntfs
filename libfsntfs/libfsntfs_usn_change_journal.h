@@ -97,6 +97,14 @@ struct libfsntfs_internal_usn_change_journal
 	/* The journal block size
 	 */
 	size_t journal_block_size;
+
+	/* The USN record data
+	 */
+	uint8_t *usn_record_data;
+
+	/* The USN record data size
+	 */
+	size_t usn_record_data_size;
 };
 
 int libfsntfs_usn_change_journal_initialize(
@@ -124,6 +132,12 @@ ssize_t libfsntfs_usn_change_journal_read_usn_record(
          uint8_t *usn_record_data,
          size_t usn_record_data_size,
          libcerror_error_t **error );
+
+LIBFSNTFS_EXTERN \
+int libfsntfs_usn_change_journal_read_record(
+     libfsntfs_usn_change_journal_t *usn_change_journal,
+     libfsntfs_usn_record_t **usn_record,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

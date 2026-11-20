@@ -9270,6 +9270,585 @@ on_error:
 	return( -1 );
 }
 
+/* Prints a FILETIME as an USN timeline value
+ * Returns 1 if successful or -1 on error
+ */
+static int info_handle_usn_timeline_filetime_fprint(
+            FILE *stream,
+            uint64_t filetime_value,
+            libcerror_error_t **error )
+{
+	char date_time_string[ 48 ];
+	libfdatetime_filetime_t *filetime = NULL;
+	static char *function             = "info_handle_usn_timeline_filetime_fprint";
+	int result                        = 0;
+
+	if( filetime_value == 0 )
+	{
+		if( fprintf(
+		     stream,
+		     "Not set" ) < 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_WRITE_FAILED,
+			 "%s: unable to write date time string.",
+			 function );
+
+			return( -1 );
+		}
+		return( 1 );
+	}
+	if( libfdatetime_filetime_initialize(
+	     &filetime,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create FILETIME.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfdatetime_filetime_copy_from_64bit(
+	     filetime,
+	     filetime_value,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy 64-bit value to FILETIME.",
+		 function );
+
+		goto on_error;
+	}
+	result = libfdatetime_filetime_copy_to_utf8_string(
+	          filetime,
+	          (uint8_t *) date_time_string,
+	          48,
+	          LIBFDATETIME_STRING_FORMAT_TYPE_ISO8601 | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME_NANO_SECONDS,
+	          error );
+
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy FILETIME to string.",
+		 function );
+
+		goto on_error;
+	}
+	if( fprintf(
+	     stream,
+	     "%sZ",
+	     date_time_string ) < 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_WRITE_FAILED,
+		 "%s: unable to write date time string.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfdatetime_filetime_free(
+	     &filetime,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free FILETIME.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+
+on_error:
+	if( filetime != NULL )
+	{
+		libfdatetime_filetime_free(
+		 &filetime,
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Prints an escaped USN timeline string value
+ * Returns 1 if successful or -1 on error
+ */
+static int info_handle_usn_timeline_string_fprint(
+            FILE *stream,
+            const uint8_t *string,
+            size_t string_size,
+            libcerror_error_t **error )
+{
+	static char *function = "info_handle_usn_timeline_string_fprint";
+	size_t string_index   = 0;
+
+	if( string == NULL )
+	{
+		return( 1 );
+	}
+	for( string_index = 0;
+	     string_index < string_size;
+	     string_index++ )
+	{
+		switch( string[ string_index ] )
+		{
+			case '|':
+				if( fprintf(
+				     stream,
+				     "\\|" ) < 0 )
+				{
+					goto on_error;
+				}
+				break;
+
+			case '\n':
+				if( fprintf(
+				     stream,
+				     "\\n" ) < 0 )
+				{
+					goto on_error;
+				}
+				break;
+
+			case '\r':
+				if( fprintf(
+				     stream,
+				     "\\r" ) < 0 )
+				{
+					goto on_error;
+				}
+				break;
+
+			default:
+				if( fputc(
+				     (int) string[ string_index ],
+				     stream ) == EOF )
+				{
+					goto on_error;
+				}
+				break;
+		}
+	}
+	return( 1 );
+
+on_error:
+	libcerror_error_set(
+	 error,
+	 LIBCERROR_ERROR_DOMAIN_IO,
+	 LIBCERROR_IO_ERROR_WRITE_FAILED,
+	 "%s: unable to write string value.",
+	 function );
+
+	return( -1 );
+}
+
+/* Prints the USN change journal ($UsnJrnl) as a timeline
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_usn_change_journal_timeline_fprint(
+     info_handle_t *info_handle,
+     libcerror_error_t **error )
+{
+	libfsntfs_usn_change_journal_t *usn_change_journal = NULL;
+	libfsntfs_usn_record_t *usn_record                 = NULL;
+	uint8_t *name                                      = NULL;
+	uint8_t *path                                      = NULL;
+	static char *function                              = "info_handle_usn_change_journal_timeline_fprint";
+	size_t name_size                                   = 0;
+	size_t path_size                                   = 0;
+	uint64_t file_reference                            = 0;
+	uint64_t parent_file_reference                     = 0;
+	uint64_t update_sequence_number                    = 0;
+	uint64_t update_time                               = 0;
+	uint32_t update_reason_flags                       = 0;
+	uint32_t update_source_flags                       = 0;
+	int result                                         = 0;
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfsntfs_volume_get_usn_change_journal(
+	          info_handle->input_volume,
+	          &usn_change_journal,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve USN change journal.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result == 0 )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "New Technology File System information:\n\n" );
+		fprintf(
+		 info_handle->notify_stream,
+		 "USN change journal: N/A\n\n" );
+
+		return( 1 );
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "New Technology File System information:\n\n" );
+	fprintf(
+	 info_handle->notify_stream,
+	 "USN change journal timeline: \\$Extend\\$UsnJrnl\n\n" );
+	fprintf(
+	 info_handle->notify_stream,
+	 "update_time|file_reference|parent_file_reference|update_sequence_number|"
+	 "update_reason_flags|update_source_flags|name|path\n" );
+
+	while( 1 )
+	{
+		result = libfsntfs_usn_change_journal_read_record(
+		          usn_change_journal,
+		          &usn_record,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read USN record.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result == 0 )
+		{
+			break;
+		}
+		if( libfsntfs_usn_record_get_update_time(
+		     usn_record,
+		     &update_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve update time.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfsntfs_usn_record_get_file_reference(
+		     usn_record,
+		     &file_reference,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve file reference.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfsntfs_usn_record_get_parent_file_reference(
+		     usn_record,
+		     &parent_file_reference,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve parent file reference.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfsntfs_usn_record_get_update_sequence_number(
+		     usn_record,
+		     &update_sequence_number,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve update sequence number.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfsntfs_usn_record_get_update_reason_flags(
+		     usn_record,
+		     &update_reason_flags,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve update reason flags.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfsntfs_usn_record_get_update_source_flags(
+		     usn_record,
+		     &update_source_flags,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve update source flags.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfsntfs_usn_record_get_utf8_name_size(
+		     usn_record,
+		     &name_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve name size.",
+			 function );
+
+			goto on_error;
+		}
+		path_size = 0;
+
+		result = libfsntfs_usn_record_get_utf8_path_size(
+		          usn_record,
+		          info_handle->input_volume,
+		          &path_size,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve path size.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result == 1 )
+		{
+			path = (uint8_t *) memory_allocate(
+			                    sizeof( uint8_t ) * path_size );
+
+			if( path == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+				 "%s: unable to create path.",
+				 function );
+
+				goto on_error;
+			}
+			if( libfsntfs_usn_record_get_utf8_path(
+			     usn_record,
+			     info_handle->input_volume,
+			     path,
+			     path_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve path.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		if( info_handle_usn_timeline_filetime_fprint(
+		     info_handle->notify_stream,
+		     update_time,
+		     error ) != 1 )
+		{
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "|%" PRIu64 "-%" PRIu16 "|%" PRIu64 "-%" PRIu16 "|%" PRIu64 "|0x%08" PRIx32 "|0x%08" PRIx32 "|",
+		 file_reference & 0x0000ffffffffffffUL,
+		 (uint16_t) ( file_reference >> 48 ),
+		 parent_file_reference & 0x0000ffffffffffffUL,
+		 (uint16_t) ( parent_file_reference >> 48 ),
+		 update_sequence_number,
+		 update_reason_flags,
+		 update_source_flags );
+
+		/* The name functions return a string including the end-of-string
+		 * character, which is not part of the timeline value.
+		 */
+		if( name_size > 0 )
+		{
+			name = (uint8_t *) memory_allocate(
+			                    sizeof( uint8_t ) * name_size );
+
+			if( name == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+				 "%s: unable to create name.",
+				 function );
+
+				goto on_error;
+			}
+			if( libfsntfs_usn_record_get_utf8_name(
+			     usn_record,
+			     name,
+			     name_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve name.",
+				 function );
+
+				goto on_error;
+			}
+			if( info_handle_usn_timeline_string_fprint(
+			     info_handle->notify_stream,
+			     name,
+			     name_size - 1,
+			     error ) != 1 )
+			{
+				goto on_error;
+			}
+			memory_free(
+			 name );
+
+			name = NULL;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "|" );
+
+		if( path != NULL )
+		{
+			if( info_handle_usn_timeline_string_fprint(
+			     info_handle->notify_stream,
+			     path,
+			     path_size - 1,
+			     error ) != 1 )
+			{
+				goto on_error;
+			}
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\n" );
+
+		if( path != NULL )
+		{
+			memory_free(
+			 path );
+
+			path = NULL;
+		}
+		if( libfsntfs_usn_record_free(
+		     &usn_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free USN record.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
+
+	if( libfsntfs_usn_change_journal_free(
+	     &usn_change_journal,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free USN change journal.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+
+on_error:
+	if( name != NULL )
+	{
+		memory_free(
+		 name );
+	}
+	if( path != NULL )
+	{
+		memory_free(
+		 path );
+	}
+	if( usn_record != NULL )
+	{
+		libfsntfs_usn_record_free(
+		 &usn_record,
+		 NULL );
+	}
+	if( usn_change_journal != NULL )
+	{
+		libfsntfs_usn_change_journal_free(
+		 &usn_change_journal,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Prints the volume information
  * Returns 1 if successful or -1 on error
  */

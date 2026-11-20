@@ -2320,6 +2320,27 @@ The offset is relative from the start of the USN change journal entry
 | ... | ... | 0x00 | Padding
 |===
 
+libfsntfs parses USN_RECORD_V2 entries into
+`libfsntfs_usn_record_t` objects. A parsed record can be associated with its
+MFT file entry by matching the complete file reference, including the MFT
+entry sequence number. The parent path is combined with the name stored in the
+USN record to reconstruct the path at the time of the change.
+
+The `fsntfsinfo -T` timeline output uses the following pipe-separated fields:
+
+[cols="1,5",options="header"]
+|===
+| Field | Description
+| update_time | USN record update time in UTC
+| file_reference | MFT entry index and sequence number
+| parent_file_reference | Parent MFT entry index and sequence number
+| update_sequence_number | USN record identifier
+| update_reason_flags | USN update reason flags
+| update_source_flags | USN update source flags
+| name | File name stored in the USN record
+| path | Parent path reconstructed from the MFT and combined with the record name
+|===
+
 ==== [[update_reason_flags]]Update reason flags
 
 [cols="1,1,5",options="header"]

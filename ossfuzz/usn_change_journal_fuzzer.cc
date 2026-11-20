@@ -51,10 +51,14 @@ int LLVMFuzzerTestOneInput(
 
 	libbfio_handle_t *file_io_handle                      = NULL;
 	libfsntfs_usn_change_journal_t *usn_change_journal    = NULL;
+	libfsntfs_usn_record_t *usn_record                    = NULL;
 	libfsntfs_volume_t *volume                            = NULL;
 	off64_t journal_offset                                = 0;
 	ssize_t read_count                                    = 0;
+	size_t path_size                                      = 0;
+	uint64_t file_reference                               = 0;
 	int read_iterator                                     = 0;
+	int read_result                                       = 0;
 	int result                                            = 0;
 
 	if( libbfio_memory_range_initialize(
@@ -121,8 +125,45 @@ int LLVMFuzzerTestOneInput(
 			{
 				break;
 			}
+			read_result = libfsntfs_usn_change_journal_read_record(
+			               usn_change_journal,
+			               &usn_record,
+			               NULL );
+
+			if( read_result == -1 )
+			{
+				goto on_error_libfsntfs_usn_change_journal;
+			}
+			if( read_result == 0 )
+			{
+				break;
+			}
+			if( libfsntfs_usn_record_get_file_reference(
+			     usn_record,
+			     &file_reference,
+			     NULL ) == -1 )
+			{
+				goto on_error_libfsntfs_usn_change_journal;
+			}
+			if( libfsntfs_usn_record_get_utf8_path_size(
+			     usn_record,
+			     volume,
+			     &path_size,
+			     NULL ) == -1 )
+			{
+				goto on_error_libfsntfs_usn_change_journal;
+			}
+			libfsntfs_usn_record_free(
+			 &usn_record,
+			 NULL );
 		}
 on_error_libfsntfs_usn_change_journal:
+		if( usn_record != NULL )
+		{
+			libfsntfs_usn_record_free(
+			 &usn_record,
+			 NULL );
+		}
 		libfsntfs_usn_change_journal_free(
 		 &usn_change_journal,
 		 NULL );

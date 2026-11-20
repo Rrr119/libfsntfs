@@ -20,6 +20,9 @@ echo "-Eall" > "${TESTS_INPUT_DIRECTORY}/.fsntfsinfo_mft/options"
 mkdir -p "${TESTS_INPUT_DIRECTORY}/.fsntfsinfo_usn"
 echo "-U" > "${TESTS_INPUT_DIRECTORY}/.fsntfsinfo_usn/options"
 
+mkdir -p "${TESTS_INPUT_DIRECTORY}/.fsntfsinfo_usn_timeline"
+echo "-T" > "${TESTS_INPUT_DIRECTORY}/.fsntfsinfo_usn_timeline/options"
+
 mkdir -p "${TESTS_INPUT_DIRECTORY}/${TEST_SET}"
 
 for TEST_FILE in ${TEST_FILES}
@@ -28,3 +31,5 @@ do
 
 	curl -L -o "${TESTS_INPUT_DIRECTORY}/${TEST_SET}/${TEST_FILE}" ${URL}
 done
+
+gzip -c -d "tests/data/usn.raw.gz" > "${TESTS_INPUT_DIRECTORY}/${TEST_SET}/usn.raw"

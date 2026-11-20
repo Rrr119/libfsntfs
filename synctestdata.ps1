@@ -34,6 +34,12 @@ If (-Not (Test-Path "${TestsInputDirectory}\.fsntfsinfo_usn"))
 	Write-Output "-U" | Out-File -Encoding ascii -FilePath "${TestsInputDirectory}\.fsntfsinfo_usn\options"
 }
 
+If (-Not (Test-Path "${TestsInputDirectory}\.fsntfsinfo_usn_timeline"))
+{
+	New-Item -Name "${TestsInputDirectory}\.fsntfsinfo_usn_timeline" -ItemType "directory" | Out-Null
+	Write-Output "-T" | Out-File -Encoding ascii -FilePath "${TestsInputDirectory}\.fsntfsinfo_usn_timeline\options"
+}
+
 If (-Not (Test-Path ${TestsInputDirectory}))
 {
 	New-Item -Name ${TestsInputDirectory} -ItemType "directory" | Out-Null
@@ -50,3 +56,11 @@ ForEach ($TestFile in ${TestFiles} -split " ")
 	$ProgressPreference = 'SilentlyContinue'
 	Invoke-WebRequest -Uri ${Url} -OutFile "${TestsInputDirectory}\${TestSet}\${TestFile}"
 }
+
+$InputFile = [System.IO.File]::OpenRead("tests\data\usn.raw.gz")
+$OutputFile = [System.IO.File]::Create("${TestsInputDirectory}\${TestSet}\usn.raw")
+$GzipStream = New-Object System.IO.Compression.GZipStream($InputFile, [System.IO.Compression.CompressionMode]::Decompress)
+$GzipStream.CopyTo($OutputFile)
+$GzipStream.Close()
+$OutputFile.Close()
+$InputFile.Close()

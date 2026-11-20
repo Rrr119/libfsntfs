@@ -426,6 +426,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfsntfs\libfsntfs_usn_record.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfsntfs\libfsntfs_volume.c"
 				>
 			</File>
@@ -821,6 +825,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfsntfs\libfsntfs_usn_change_journal.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfsntfs\libfsntfs_usn_record.h"
 				>
 			</File>
 			<File

@@ -3057,8 +3057,16 @@ int fsntfs_test_volume_get_usn_change_journal(
      libfsntfs_volume_t *volume )
 {
 	libcerror_error_t *error                           = NULL;
+	libfsntfs_file_entry_t *file_entry                 = NULL;
 	libfsntfs_usn_change_journal_t *usn_change_journal = 0;
+	libfsntfs_usn_record_t *usn_record                 = NULL;
+	size_t path_size                                   = 0;
+	uint64_t file_reference                            = 0;
+	int number_of_associated_records                   = 0;
+	int number_of_records                              = 0;
+	int record_is_associated                           = 0;
 	int result                                         = 0;
+	int read_result                                    = 0;
 	int usn_change_journal_is_set                      = 0;
 
 	/* Test regular cases
@@ -3085,6 +3093,133 @@ int fsntfs_test_volume_get_usn_change_journal(
 		 "usn_change_journal",
 		 usn_change_journal );
 
+		while( 1 )
+		{
+			read_result = libfsntfs_usn_change_journal_read_record(
+			               usn_change_journal,
+			               &usn_record,
+			               &error );
+
+			FSNTFS_TEST_ASSERT_NOT_EQUAL_INT(
+			 "read_result",
+			 read_result,
+			 -1 );
+
+			FSNTFS_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+
+			if( read_result == 0 )
+			{
+				break;
+			}
+			number_of_records++;
+			record_is_associated = 0;
+
+			result = libfsntfs_usn_record_get_file_reference(
+			          usn_record,
+			          &file_reference,
+			          &error );
+
+			FSNTFS_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 1 );
+
+			FSNTFS_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+
+			result = libfsntfs_usn_record_get_file_entry(
+			          usn_record,
+			          volume,
+			          &file_entry,
+			          &error );
+
+			FSNTFS_TEST_ASSERT_NOT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			FSNTFS_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+
+			if( result == 1 )
+			{
+				number_of_associated_records++;
+				record_is_associated = 1;
+
+				FSNTFS_TEST_ASSERT_IS_NOT_NULL(
+				 "file_entry",
+				 file_entry );
+
+				result = libfsntfs_file_entry_free(
+				          &file_entry,
+				          &error );
+
+				FSNTFS_TEST_ASSERT_EQUAL_INT(
+				 "result",
+				 result,
+				 1 );
+
+				FSNTFS_TEST_ASSERT_IS_NULL(
+				 "error",
+				 error );
+			}
+			path_size = 0;
+
+			result = libfsntfs_usn_record_get_utf8_path_size(
+			          usn_record,
+			          volume,
+			          &path_size,
+			          &error );
+
+			FSNTFS_TEST_ASSERT_NOT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			FSNTFS_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+
+			if( record_is_associated != 0 )
+			{
+				FSNTFS_TEST_ASSERT_EQUAL_INT(
+				 "result",
+				 result,
+				 1 );
+
+				FSNTFS_TEST_ASSERT_GREATER_THAN_INT(
+				 "path_size",
+				 (int) path_size,
+				 1 );
+			}
+			result = libfsntfs_usn_record_free(
+			          &usn_record,
+			          &error );
+
+			FSNTFS_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 1 );
+
+			FSNTFS_TEST_ASSERT_IS_NULL(
+			 "usn_record",
+			 usn_record );
+
+			FSNTFS_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+		}
+		if( number_of_records > 0 )
+		{
+			FSNTFS_TEST_ASSERT_GREATER_THAN_INT(
+			 "number_of_associated_records",
+			 number_of_associated_records,
+			 0 );
+		}
 		result = libfsntfs_usn_change_journal_free(
 		          &usn_change_journal,
 		          &error );
@@ -3156,6 +3291,18 @@ on_error:
 	{
 		libfsntfs_usn_change_journal_free(
 		 &usn_change_journal,
+		 NULL );
+	}
+	if( usn_record != NULL )
+	{
+		libfsntfs_usn_record_free(
+		 &usn_record,
+		 NULL );
+	}
+	if( file_entry != NULL )
+	{
+		libfsntfs_file_entry_free(
+		 &file_entry,
 		 NULL );
 	}
 	return( 0 );

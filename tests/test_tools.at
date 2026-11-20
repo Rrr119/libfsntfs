@@ -7,6 +7,7 @@ include_test_inputs([fsntfsinfo_bodyfile_mft])
 include_test_inputs([fsntfsinfo_fs])
 include_test_inputs([fsntfsinfo_mft])
 include_test_inputs([fsntfsinfo_usn])
+include_test_inputs([fsntfsinfo_usn_timeline])
 
 AT_TEST_HELPER_FN(
   [compare_with_reference],
@@ -346,6 +347,12 @@ RUN_TEST_FSNTFSTOOL_AND_COMPARE_STDOUT(
   [fsntfsinfo_usn],
   [],
   test_inputs_fsntfsinfo_usn)
+
+RUN_TEST_FSNTFSTOOL_AND_COMPARE_STDOUT(
+  [fsntfsinfo],
+  [fsntfsinfo_usn_timeline],
+  [],
+  test_inputs_fsntfsinfo_usn_timeline)
 
 RUN_TEST_FSNTFSTOOL_AND_COMPARE_BODYFILE(
   [fsntfsinfo],

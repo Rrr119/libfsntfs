@@ -1269,6 +1269,9 @@ test_inputs_fsntfsinfo_fs.at: generate_test_inputs.sh
 test_inputs_fsntfsinfo_usn.at: generate_test_inputs.sh
 	$(SHELL) $(srcdir)/generate_test_inputs.sh $(PACKAGE_NAME) fsntfsinfo_usn
 
+test_inputs_fsntfsinfo_usn_timeline.at: generate_test_inputs.sh
+	$(SHELL) $(srcdir)/generate_test_inputs.sh $(PACKAGE_NAME) fsntfsinfo_usn_timeline
+
 test_library: \
 	package.m4 \
 	test_inputs_libfsntfs.at \
@@ -1293,11 +1296,13 @@ test_tools: \
 	test_inputs_fsntfsinfo_fs.at \
 	test_inputs_fsntfsinfo_mft.at \
 	test_inputs_fsntfsinfo_usn.at \
+	test_inputs_fsntfsinfo_usn_timeline.at \
 	test_macros.at \
 	test_tools.at
 
 EXTRA_DIST = \
 	$(check_SCRIPTS) \
+	data/usn.raw.gz \
 	generate_test_inputs.sh \
 	package.m4 \
 	test_library.at \

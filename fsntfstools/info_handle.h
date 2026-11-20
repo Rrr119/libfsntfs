@@ -317,6 +317,10 @@ int info_handle_usn_change_journal_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error );
 
+int info_handle_usn_change_journal_timeline_fprint(
+     info_handle_t *info_handle,
+     libcerror_error_t **error );
+
 int info_handle_volume_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error );

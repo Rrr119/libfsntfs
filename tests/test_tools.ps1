@@ -114,7 +114,7 @@ Foreach (${TestName} in ${ToolsTests} -split " ")
 	}
 }
 
-$Profiles = @("fsntfsinfo", "fsntfsinfo_fs", "fsntfsinfo_mft", "fsntfsinfo_usn", "fsntfsinfo_bodyfile_fs", "fsntfsinfo_bodyfile_mft")
+$Profiles = @("fsntfsinfo", "fsntfsinfo_fs", "fsntfsinfo_mft", "fsntfsinfo_usn", "fsntfsinfo_usn_timeline", "fsntfsinfo_bodyfile_fs", "fsntfsinfo_bodyfile_mft")
 
 For ($ProfileIndex = 0; $ProfileIndex -le ($Profiles.length - 1); $ProfileIndex += 1)
 {

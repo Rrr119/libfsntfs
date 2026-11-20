@@ -33,6 +33,7 @@
 #include "libfsntfs_mft_attribute.h"
 #include "libfsntfs_types.h"
 #include "libfsntfs_usn_change_journal.h"
+#include "libfsntfs_usn_record.h"
 
 /* Creates an USN change journal
  * Make sure the value usn_change_journal is referencing, is set to NULL
@@ -207,6 +208,22 @@ int libfsntfs_usn_change_journal_initialize(
 
 		goto on_error;
 	}
+	internal_usn_change_journal->usn_record_data_size = internal_usn_change_journal->journal_block_size;
+
+	internal_usn_change_journal->usn_record_data = (uint8_t *) memory_allocate(
+	                                                               sizeof( uint8_t ) * internal_usn_change_journal->usn_record_data_size );
+
+	if( internal_usn_change_journal->usn_record_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create USN record data.",
+		 function );
+
+		goto on_error;
+	}
 	internal_usn_change_journal->file_io_handle  = file_io_handle;
 	internal_usn_change_journal->directory_entry = directory_entry;
 
@@ -223,6 +240,12 @@ on_error:
 			 &( internal_usn_change_journal->data_stream ),
 			 NULL );
 		}
+		memory_free(
+		 internal_usn_change_journal->journal_block_data );
+
+		memory_free(
+		 internal_usn_change_journal->usn_record_data );
+
 		memory_free(
 		 internal_usn_change_journal );
 	}
@@ -286,6 +309,9 @@ int libfsntfs_usn_change_journal_free(
 		}
 		memory_free(
 		 internal_usn_change_journal->journal_block_data );
+
+		memory_free(
+		 internal_usn_change_journal->usn_record_data );
 
 		memory_free(
 		 internal_usn_change_journal );
@@ -629,5 +655,91 @@ ssize_t libfsntfs_usn_change_journal_read_usn_record(
 	internal_usn_change_journal->journal_block_offset += usn_record_size;
 
 	return( (ssize_t) usn_record_size );
+}
+
+/* Reads the next parsed USN record from the USN change journal
+ * Returns 1 if successful, 0 if no more records are available or -1 on error
+ */
+int libfsntfs_usn_change_journal_read_record(
+     libfsntfs_usn_change_journal_t *usn_change_journal,
+     libfsntfs_usn_record_t **usn_record,
+     libcerror_error_t **error )
+{
+	libfsntfs_internal_usn_change_journal_t *internal_usn_change_journal = NULL;
+	static char *function                                                = "libfsntfs_usn_change_journal_read_record";
+	ssize_t read_count                                                   = 0;
+
+	if( usn_change_journal == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid USN change journal.",
+		 function );
+
+		return( -1 );
+	}
+	internal_usn_change_journal = (libfsntfs_internal_usn_change_journal_t *) usn_change_journal;
+
+	if( usn_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid USN record.",
+		 function );
+
+		return( -1 );
+	}
+	if( *usn_record != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid USN record value already set.",
+		 function );
+
+		return( -1 );
+	}
+	read_count = libfsntfs_usn_change_journal_read_usn_record(
+	              usn_change_journal,
+	              internal_usn_change_journal->usn_record_data,
+	              internal_usn_change_journal->usn_record_data_size,
+	              error );
+
+	if( read_count == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read USN record data.",
+		 function );
+
+		return( -1 );
+	}
+	if( read_count == 0 )
+	{
+		return( 0 );
+	}
+	if( libfsntfs_usn_record_initialize(
+	     usn_record,
+	     internal_usn_change_journal->usn_record_data,
+	     (size_t) read_count,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create USN record.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 

@@ -56,6 +56,7 @@ enum FSNTFSINFO_MODES
 	FSNTFSINFO_MODE_FILE_SYSTEM_HIERARCHY,
 	FSNTFSINFO_MODE_MFT_ENTRY,
 	FSNTFSINFO_MODE_USN_CHANGE_JOURNAL,
+	FSNTFSINFO_MODE_USN_TIMELINE,
 	FSNTFSINFO_MODE_VOLUME
 };
 
@@ -125,6 +126,7 @@ int main( int argc, char * const argv[] )
 		{ 'h', NULL, "shows this help" },
 		{ 'H', NULL, "shows the file system hierarchy" },
 		{ 'o', "offset", "specify the volume offset in bytes" },
+		{ 'T', NULL, "shows the USN change journal ($UsnJrnl) as a timeline" },
 		{ 'U', NULL, "shows information from the USN change journal ($UsnJrnl)" },
 		{ 'v', NULL, "verbose output to stderr" },
 		{ 'V', NULL, "print version" },
@@ -257,6 +259,11 @@ int main( int argc, char * const argv[] )
 
 			case (system_integer_t) 'o':
 				option_volume_offset = optarg;
+
+				break;
+
+			case (system_integer_t) 'T':
+				option_mode = FSNTFSINFO_MODE_USN_TIMELINE;
 
 				break;
 
@@ -491,6 +498,27 @@ int main( int argc, char * const argv[] )
 				fprintf(
 				 stderr,
 				 "Unable to print USN change journal ($UsnJrnl) information.\n" );
+
+				goto on_error;
+			}
+			break;
+
+		case FSNTFSINFO_MODE_USN_TIMELINE:
+			if( fsntfsinfo_info_handle->input_volume == NULL )
+			{
+				fprintf(
+				 stderr,
+				 "Unable to print USN change journal ($UsnJrnl) timeline.\n" );
+
+				goto on_error;
+			}
+			if( info_handle_usn_change_journal_timeline_fprint(
+			     fsntfsinfo_info_handle,
+			     &error ) != 1 )
+			{
+				fprintf(
+				 stderr,
+				 "Unable to print USN change journal ($UsnJrnl) timeline.\n" );
 
 				goto on_error;
 			}

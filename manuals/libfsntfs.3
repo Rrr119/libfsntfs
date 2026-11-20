@@ -1673,6 +1673,183 @@ USN change journal functions
 .Fa "libfsntfs_error_t **error"
 .Fc
 .fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_change_journal_read_record
+.Fa "libfsntfs_usn_change_journal_t *usn_change_journal"
+.Fa "libfsntfs_usn_record_t **usn_record"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.Ss USN record functions
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_initialize
+.Fa "libfsntfs_usn_record_t **usn_record"
+.Fa "const uint8_t *data"
+.Fa "size_t data_size"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_free
+.Fa "libfsntfs_usn_record_t **usn_record"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_size
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint32_t *record_size"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_version
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint16_t *major_version"
+.Fa "uint16_t *minor_version"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_file_reference
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint64_t *file_reference"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_parent_file_reference
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint64_t *parent_file_reference"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_update_sequence_number
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint64_t *update_sequence_number"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_update_time
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint64_t *filetime"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_update_reason_flags
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint32_t *update_reason_flags"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_update_source_flags
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint32_t *update_source_flags"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_security_descriptor_identifier
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint32_t *security_descriptor_identifier"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_file_attribute_flags
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint32_t *file_attribute_flags"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_utf8_name_size
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "size_t *utf8_string_size"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_utf8_name
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint8_t *utf8_string"
+.Fa "size_t utf8_string_size"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_utf16_name_size
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "size_t *utf16_string_size"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_utf16_name
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "uint16_t *utf16_string"
+.Fa "size_t utf16_string_size"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_file_entry
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "libfsntfs_volume_t *volume"
+.Fa "libfsntfs_file_entry_t **file_entry"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_parent_file_entry
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "libfsntfs_volume_t *volume"
+.Fa "libfsntfs_file_entry_t **parent_file_entry"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_utf8_path_size
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "libfsntfs_volume_t *volume"
+.Fa "size_t *utf8_string_size"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
+.nf
+.Ft int
+.Fo libfsntfs_usn_record_get_utf8_path
+.Fa "libfsntfs_usn_record_t *usn_record"
+.Fa "libfsntfs_volume_t *volume"
+.Fa "uint8_t *utf8_string"
+.Fa "size_t utf8_string_size"
+.Fa "libfsntfs_error_t **error"
+.Fc
+.fi
 .Sh DESCRIPTION
 The
 .Fn libfsntfs_get_version

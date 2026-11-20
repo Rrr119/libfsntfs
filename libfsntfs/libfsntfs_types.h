@@ -40,6 +40,7 @@ typedef struct libfsntfs_data_stream {}			libfsntfs_data_stream_t;
 typedef struct libfsntfs_file_entry {}			libfsntfs_file_entry_t;
 typedef struct libfsntfs_mft_metadata_file {}		libfsntfs_mft_metadata_file_t;
 typedef struct libfsntfs_usn_change_journal {}		libfsntfs_usn_change_journal_t;
+typedef struct libfsntfs_usn_record {}			libfsntfs_usn_record_t;
 typedef struct libfsntfs_volume {}			libfsntfs_volume_t;
 
 #else
@@ -49,6 +50,7 @@ typedef intptr_t libfsntfs_data_stream_t;
 typedef intptr_t libfsntfs_file_entry_t;
 typedef intptr_t libfsntfs_mft_metadata_file_t;
 typedef intptr_t libfsntfs_usn_change_journal_t;
+typedef intptr_t libfsntfs_usn_record_t;
 typedef intptr_t libfsntfs_volume_t;
 
 #endif /* defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI ) */
